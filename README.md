@@ -53,21 +53,36 @@ Existem duas formas de autenticar:
 ### 1. Via Terminal
 O QR Code será exibido diretamente no terminal quando você iniciar o serviço.
 
-### 2. Via Endpoints
-Acesse o QR Code através dos seguintes endpoints:
+### 2. Via Endpoint
+Acesse o QR Code através do seguinte endpoint:
 
-- **Visualizar QR Code como imagem**: 
-  - Acesse `http://localhost:3000/qr-image` no navegador
-- **Obter QR Code como texto**: 
-  - GET `http://localhost:3000/qr`
-- **Verificar status da conexão**: 
-  - GET `http://localhost:3000/status`
+- **Visualizar QR Code**: 
+  - Acesse `http://localhost:3000/qrcode` no navegador
+  - O QR Code será exibido como uma imagem HTML
+  - Se já estiver conectado ou o QR Code não estiver disponível, uma mensagem apropriada será exibida
 
 ## Endpoints Disponíveis
 
-### 1. Enviar Mensagem para Grupo
+### 1. Visualizar QR Code
+```bash
+GET http://localhost:3000/qrcode
+```
+Retorna uma página HTML com a imagem do QR Code para autenticação.
+
+### 2. Enviar Mensagem para Contato
 ```bash
 POST http://localhost:3000/send-message
+Content-Type: application/json
+
+{
+    "number": "5511999999999",
+    "message": "Sua mensagem aqui"
+}
+```
+
+### 3. Enviar Mensagem para Grupo
+```bash
+POST http://localhost:3000/send-group-message
 Content-Type: application/json
 
 {
@@ -76,38 +91,28 @@ Content-Type: application/json
 }
 ```
 
-### 2. Enviar Mensagem para Contato Individual
-```bash
-POST http://localhost:3000/send-personal-message
-Content-Type: application/json
-
-{
-    "phoneNumber": "5511999999999",
-    "message": "Sua mensagem aqui"
-}
-```
-
-### 3. Listar Grupos
+### 4. Listar Grupos
 ```bash
 GET http://localhost:3000/list-groups
 ```
+Retorna um JSON com a lista de grupos e seus IDs.
 
 ## Exemplos de Uso
 
 ### Usando cURL
 
-1. Enviar mensagem para grupo:
+1. Enviar mensagem para contato:
 ```bash
 curl -X POST http://localhost:3000/send-message \
 -H "Content-Type: application/json" \
--d '{"groupId":"123456789-123456@g.us","message":"Teste de mensagem"}'
+-d '{"number":"5511999999999","message":"Teste de mensagem"}'
 ```
 
-2. Enviar mensagem para contato:
+2. Enviar mensagem para grupo:
 ```bash
-curl -X POST http://localhost:3000/send-personal-message \
+curl -X POST http://localhost:3000/send-group-message \
 -H "Content-Type: application/json" \
--d '{"phoneNumber":"5511999999999","message":"Teste de mensagem"}'
+-d '{"groupId":"123456789-123456@g.us","message":"Teste de mensagem"}'
 ```
 
 3. Listar grupos:
