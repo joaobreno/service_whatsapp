@@ -38,22 +38,6 @@ client.on('auth_failure', (msg) => {
 client.on('ready', async () => {
     qrCodeData = null; // Limpa o QR code após conexão
     console.log('✅ Bot pronto e conectado!');
-
-    try {
-        // Lista os grupos no console
-        const chats = await client.getChats();
-        const groups = chats.filter(chat => chat.isGroup);
-        
-        console.log('\n=== LISTA DE GRUPOS ===');
-        groups.forEach(group => {
-            console.log('Nome:', group.name);
-            console.log('ID:', group.id._serialized);
-            console.log('-------------------');
-        });
-
-    } catch (error) {
-        console.error('Erro ao listar grupos:', error);
-    }
 });
 
 // Evento de erro global
@@ -110,6 +94,24 @@ app.post('/send-group-message', async (req, res) => {
     } catch (error) {
         console.error('Erro ao enviar mensagem para grupo:', error);
         res.status(500).json({ error: 'Erro ao enviar mensagem para grupo' });
+    }
+});
+
+// Endpoint para listar grupos
+app.get('/list-groups', async (req, res) => {
+    try {
+        const chats = await client.getChats();
+        const groups = chats.filter(chat => chat.isGroup);
+        
+        const groupList = groups.map(group => ({
+            name: group.name,
+            id: group.id._serialized
+        }));
+
+        res.json({ success: true, groups: groupList });
+    } catch (error) {
+        console.error('Erro ao listar grupos:', error);
+        res.status(500).json({ error: 'Erro ao listar grupos' });
     }
 });
 
