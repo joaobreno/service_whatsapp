@@ -13,8 +13,17 @@ let qrCodeData = null; // Armazena o QR Code temporariamente
 client = new Client({
     authStrategy: new LocalAuth(), // Permite salvar a sessão
     puppeteer: {
-        args: ['--no-sandbox'],
-        headless: true // Mantém a execução sem abrir o navegador
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--disable-gpu'
+        ],
+        headless: true,
+        executablePath: '/usr/bin/chromium'
     }
 });
 

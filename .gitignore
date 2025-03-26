@@ -1,6 +1,12 @@
 # Created by https://www.toptal.com/developers/gitignore/api/node
 # Edit at https://www.toptal.com/developers/gitignore?templates=node
 
+### Service
+.wwebjs_auth/
+.wwebjs_cache/
+.wwebjs_media/
+.wwebjs_session/
+
 ### Node ###
 # Logs
 logs
