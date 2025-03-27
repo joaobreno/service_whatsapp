@@ -27,7 +27,11 @@ client = new Client({
             '--disable-features=Site-per-process',
             '--disable-software-rasterizer',
             '--disable-threaded-scrolling',
-            '--disable-threaded-animation'
+            '--disable-threaded-animation',
+            '--js-flags="--max-old-space-size=512"', // Limita heap do Node
+            '--disable-notifications',
+            '--disable-background-timer-throttling',
+            '--disable-backgrounding-occluded-windows'
         ],
         headless: true,
         defaultViewport: {
@@ -74,9 +78,23 @@ client.on('ready', async () => {
     setInterval(limparMemoria, 10 * 60 * 1000);
 });
 
-// Evento de erro global
-client.on('error', (error) => {
+// Adicione esta função para reinicializar o cliente
+async function reinicializarCliente() {
+    console.log('Tentando reinicializar o cliente...');
+    try {
+        await client.destroy();
+        client.initialize();
+    } catch (error) {
+        console.error('Erro ao reinicializar:', error);
+    }
+}
+
+// Modifique o evento de erro
+client.on('error', async (error) => {
     console.error('Erro no WhatsApp:', error);
+    if (error.message.includes('Session closed')) {
+        await reinicializarCliente();
+    }
 });
 
 // Inicia o cliente do WhatsApp
