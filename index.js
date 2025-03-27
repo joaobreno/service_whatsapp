@@ -20,10 +20,18 @@ client = new Client({
             '--disable-accelerated-2d-canvas',
             '--no-first-run',
             '--no-zygote',
-            '--disable-gpu'
+            '--disable-gpu',
+            '--single-process',
+            '--disable-extensions'
         ],
         headless: true,
-        executablePath: '/usr/bin/chromium'
+        defaultViewport: {
+            width: 800,
+            height: 600
+        },
+        // Limitar uso de memória do Chromium
+        executablePath: process.env.CHROME_BIN || null,
+        pipe: true
     }
 });
 
