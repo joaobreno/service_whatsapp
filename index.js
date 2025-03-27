@@ -23,7 +23,6 @@ client = new Client({
             '--disable-gpu',
             '--single-process',
             '--disable-extensions',
-            '--js-flags="--max-old-space-size=384"', // Limita heap do Node
             '--memory-pressure-off',
             '--disable-features=Site-per-process',
             '--disable-software-rasterizer',
@@ -38,9 +37,6 @@ client = new Client({
         // Limitar uso de memória do Chromium
         executablePath: process.env.CHROME_BIN || null,
         pipe: true,
-        // Limitar memória do navegador
-        ignoreDefaultArgs: ['--disable-extensions'],
-        userDataDir: './session', // Diretório fixo para sessão
     }
 });
 
