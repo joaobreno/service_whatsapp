@@ -28,7 +28,7 @@ client = new Client({
             '--disable-software-rasterizer',
             '--disable-threaded-scrolling',
             '--disable-threaded-animation',
-            '--js-flags="--max-old-space-size=700"', // Limita heap do Node
+            '--js-flags="--max-old-space-size=499"', // Limita heap do Node
             '--disable-notifications',
             '--disable-background-timer-throttling',
             '--disable-backgrounding-occluded-windows'
