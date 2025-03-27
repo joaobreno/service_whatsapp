@@ -22,7 +22,13 @@ client = new Client({
             '--no-zygote',
             '--disable-gpu',
             '--single-process',
-            '--disable-extensions'
+            '--disable-extensions',
+            '--js-flags="--max-old-space-size=384"', // Limita heap do Node
+            '--memory-pressure-off',
+            '--disable-features=Site-per-process',
+            '--disable-software-rasterizer',
+            '--disable-threaded-scrolling',
+            '--disable-threaded-animation'
         ],
         headless: true,
         defaultViewport: {
@@ -31,7 +37,10 @@ client = new Client({
         },
         // Limitar uso de memória do Chromium
         executablePath: process.env.CHROME_BIN || null,
-        pipe: true
+        pipe: true,
+        // Limitar memória do navegador
+        ignoreDefaultArgs: ['--disable-extensions'],
+        userDataDir: './session', // Diretório fixo para sessão
     }
 });
 
@@ -51,10 +60,22 @@ client.on('auth_failure', (msg) => {
     console.error('Falha na autenticação!', msg);
 });
 
+// Adicione esta função de limpeza periódica
+function limparMemoria() {
+    if (global.gc) {
+        global.gc();
+    }
+    
+    // Limpa variáveis não utilizadas
+    qrCodeData = null;
+}
+
 // Evento quando o cliente está pronto
 client.on('ready', async () => {
-    qrCodeData = null; // Limpa o QR code após conexão
+    qrCodeData = null;
     console.log('✅ Bot pronto e conectado!');
+    // Executa limpeza a cada 10 minutos
+    setInterval(limparMemoria, 10 * 60 * 1000);
 });
 
 // Evento de erro global
