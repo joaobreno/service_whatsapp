@@ -28,7 +28,7 @@ client = new Client({
             '--disable-software-rasterizer',
             '--disable-threaded-scrolling',
             '--disable-threaded-animation',
-            '--js-flags="--max-old-space-size=512"', // Limita heap do Node
+            '--js-flags="--max-old-space-size=700"', // Limita heap do Node
             '--disable-notifications',
             '--disable-background-timer-throttling',
             '--disable-backgrounding-occluded-windows'
@@ -122,13 +122,29 @@ app.post('/send-message', async (req, res) => {
         return res.status(400).json({ error: 'Número e mensagem são obrigatórios' });
     }
 
-    try {
-        const formattedNumber = number.includes('@c.us') ? number : `${number}@c.us`; // Formata o número
-        await client.sendMessage(formattedNumber, message);
-        res.json({ success: true, message: `Mensagem enviada para ${number}` });
-    } catch (error) {
-        console.error('Erro ao enviar mensagem:', error);
-        res.status(500).json({ error: 'Erro ao enviar mensagem' });
+    let tentativas = 0;
+    const maxTentativas = 3;
+
+    while (tentativas < maxTentativas) {
+        try {
+            const formattedNumber = number.includes('@c.us') ? number : `${number}@c.us`;
+            await client.sendMessage(formattedNumber, message);
+            return res.json({ success: true, message: `Mensagem enviada para ${number}` });
+        } catch (error) {
+            console.error(`Tentativa ${tentativas + 1} falhou:`, error);
+            tentativas++;
+            
+            if (error.message.includes('Session closed')) {
+                await reinicializarCliente();
+                await new Promise(resolve => setTimeout(resolve, 5000));
+            }
+            
+            if (tentativas === maxTentativas) {
+                return res.status(500).json({ 
+                    error: 'Erro ao enviar mensagem após várias tentativas' 
+                });
+            }
+        }
     }
 });
 
