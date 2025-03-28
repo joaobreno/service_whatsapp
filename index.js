@@ -8,6 +8,7 @@ app.use(express.json());
 
 let client = null;
 let qrCodeData = null; // Armazena o QR Code temporariamente
+let botReady = false;
 
 // Inicializa o cliente com persistência de sessão
 client = new Client({
@@ -73,6 +74,7 @@ function limparMemoria() {
 // Evento quando o cliente está pronto
 client.on('ready', async () => {
     qrCodeData = null;
+    botReady = true;
     console.log('✅ Bot pronto e conectado!');
     // Executa limpeza a cada 10 minutos
     setInterval(limparMemoria, 10 * 60 * 1000);
@@ -180,6 +182,29 @@ app.get('/list-groups', async (req, res) => {
     } catch (error) {
         console.error('Erro ao listar grupos:', error);
         res.status(500).json({ error: 'Erro ao listar grupos' });
+    }
+});
+
+// Endpoint para reinicializar o cliente
+app.post('/restart-session', async (req, res) => {
+    try {
+        await reinicializarCliente();
+        
+        // Aguarda até que o bot esteja pronto
+        let tentativas = 0;
+        while (!botReady && tentativas < 30) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            tentativas++;
+        }
+        
+        if (botReady) {
+            res.json({ result: true });
+        } else {
+            res.json({ result: false });
+        }
+    } catch (error) {
+        console.error('Erro ao reinicializar cliente:', error);
+        res.json({ result: false });
     }
 });
 
