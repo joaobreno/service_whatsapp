@@ -188,12 +188,13 @@ app.get('/list-groups', async (req, res) => {
 // Endpoint para reinicializar o cliente
 app.post('/restart-session', async (req, res) => {
     try {
+        limparMemoria();
         await reinicializarCliente();
         
         // Aguarda até que o bot esteja pronto
         let tentativas = 0;
-        while (!botReady && tentativas < 30) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
+        while (!botReady && tentativas < 6) {
+            await new Promise(resolve => setTimeout(resolve, 5000));
             tentativas++;
         }
         
