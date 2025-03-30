@@ -124,29 +124,15 @@ app.post('/send-message', async (req, res) => {
         return res.status(400).json({ error: 'Número e mensagem são obrigatórios' });
     }
 
-    let tentativas = 0;
-    const maxTentativas = 3;
-
-    while (tentativas < maxTentativas) {
-        try {
-            const formattedNumber = number.includes('@c.us') ? number : `${number}@c.us`;
-            await client.sendMessage(formattedNumber, message);
-            return res.json({ success: true, message: `Mensagem enviada para ${number}` });
-        } catch (error) {
-            console.error(`Tentativa ${tentativas + 1} falhou:`, error);
-            tentativas++;
-            
-            if (error.message.includes('Session closed')) {
-                await reinicializarCliente();
-                await new Promise(resolve => setTimeout(resolve, 5000));
-            }
-            
-            if (tentativas === maxTentativas) {
-                return res.status(500).json({ 
-                    error: 'Erro ao enviar mensagem após várias tentativas' 
-                });
-            }
-        }
+    try {
+        const formattedNumber = number.includes('@c.us') ? number : `${number}@c.us`;
+        await client.sendMessage(formattedNumber, message);
+        return res.json({ success: true, message: `Mensagem enviada para ${number}` });
+    } catch (error) {
+        console.error('Erro ao enviar mensagem:', error);
+        return res.status(500).json({ 
+            error: 'Erro ao enviar mensagem' 
+        });
     }
 });
 
@@ -189,24 +175,22 @@ app.get('/list-groups', async (req, res) => {
 app.post('/restart-session', async (req, res) => {
     try {
         limparMemoria();
+        botReady = false;
         await reinicializarCliente();
-        
-        // Aguarda até que o bot esteja pronto
-        let tentativas = 0;
-        while (!botReady && tentativas < 6) {
-            await new Promise(resolve => setTimeout(resolve, 5000));
-            tentativas++;
-        }
-        
-        if (botReady) {
-            res.json({ result: true });
-        } else {
-            res.json({ result: false });
-        }
+        res.json({ result: true });
     } catch (error) {
         console.error('Erro ao reinicializar cliente:', error);
         res.json({ result: false });
     }
+});
+
+// Endpoint para verificar status do bot
+app.get('/status-service', (req, res) => {
+    console.log('Retorno status do bot: ', botReady);
+    res.json({
+        ready: botReady,
+        needsQR: !!qrCodeData
+    });
 });
 
 // Inicia o servidor Express
