@@ -2,6 +2,8 @@ const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode');
 const express = require('express');
 const fs = require('fs');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
 
 const app = express();
 app.use(express.json());
@@ -191,6 +193,31 @@ app.get('/status-service', (req, res) => {
         ready: botReady,
         needsQR: !!qrCodeData
     });
+});
+
+// Endpoint para enviar imagem com ou sem mensagem
+app.post('/send-image', upload.single('image'), async (req, res) => {
+    const { number, caption } = req.body;
+    const image = req.file;
+
+    if (!number || !image) {
+        return res.status(400).json({ error: 'Número e imagem são obrigatórios' });
+    }
+
+    try {
+        const formattedNumber = number.includes('@c.us') ? number : `${number}@c.us`;
+        const media = new MessageMedia(
+            image.mimetype,
+            image.buffer.toString('base64'),
+            image.originalname
+        );
+        
+        await client.sendMessage(formattedNumber, media, { caption });
+        return res.json({ success: true, message: `Imagem enviada para ${number}` });
+    } catch (error) {
+        console.error('Erro ao enviar imagem:', error);
+        return res.status(500).json({ error: 'Erro ao enviar imagem' });
+    }
 });
 
 // Inicia o servidor Express
